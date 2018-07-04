@@ -1,3 +1,50 @@
-<div>
-왼쪽
+<script type="text/javascript">
+	var firstMenu = "";
+	$(document).ready(function(){
+		
+		
+			
+		
+		
+		initMenu();
+		
+		 
+	});
+	
+	function initMenu(){
+		//UID구해오기
+		
+		firebase.database().ref("/menuList").once('value',function(menuList){
+			
+			menuList.forEach(function(childSnapshot) {
+			    var childKey = childSnapshot.key;
+			    var menuList = childSnapshot.val();
+			    
+			    if(menuList.UPPER_MENU_ID == 0){
+			    	firstMenu += "<li class='first' onclick='#'>";
+					firstMenu += "	<p >"+menuList.MENU_NM+"</p>";
+					firstMenu += "</li>";
+					firebase.database().ref("/menuList").once('value',function(sonMenuList){
+						sonMenuList.forEach(function(sonChildSnapshot) {
+						    var sonMenuList = sonChildSnapshot.val();
+						    if(sonMenuList.UPPER_MENU_ID == menuList.MENU_ID){
+						    	firstMenu += "<li class='secon' onclick='javascript:movePage(&apos;"+sonMenuList.ID_FORM+"&apos;)'><p >"+sonMenuList.MENU_NM+"</p></li>";
+						    }
+						});
+					
+						$("#menuList").html(firstMenu);		
+					});
+			    }
+			});
+		    
+			 
+		});
+		
+	}
+	
+	</script>
+
+<div class="mainContentWrap" style="width: 100%" >
+	<ul id="menuList" class="memuList"  >
+	</ul>
 </div>

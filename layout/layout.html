@@ -1,45 +1,93 @@
 <!DOCTYPE html> 
 <html>
-<head>
+<head>  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/4.6.1/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/4.6.1/firebase-auth.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/4.6.1/firebase-database.js"></script>
+	<script src="../js/fireinit.js"></script>
+	<link type="text/css" rel="stylesheet" href="../css/common.css" />
+	<link type="text/css" rel="stylesheet" href="../css/reset.css" />
 	<script type="text/javascript">
 	$(document).ready(function(){
+		
+		//UID구해오기
+		var uID = getUserUid(location.href);
+		firebase.database().ref("/onUsers/"+uID+"/siteOn").once('value',function(snapshot){
+			if ( snapshot.val() == 0){ //0인경우 로그인불가 인증안된 화면
+				alert("잘못된 접근입니다. 인증 후 다시 접속해주시기 바랍니다.");
+				window.location.href="https://culturalheritage-36e7c.firebaseapp.com";
+				$("#myBody").hide();
+			}else{
+				$("#myBody").show();		
+			}
+		});
+		  
+		
+		
 		$("#includeHeader").load("header.html");
 		$("#includeLeft").load("left.html");
-		$("#includeCenter").load("./body/main.html");
-		$("#includeRight").load("right.html");
+		$("#includeCenter").load("../layout/body/main.html");
+		//$("#includeRight").load("right.html");
 		$("#includeFooter").load("footer.html");
+		/*로그아웃 버튼*/
+ 		$("#BTN_GOOGLE_LOGOUT").click(function(){ 
+ 			firebase.auth().signOut().then(function(){
+ 				alert("인증이 해제되었습니다.");
+ 				$("#BTN_GOOGLE_LOGIN").show();
+ 				firebase.database().ref("/onUsers/"+uID+"/siteOn").set(0);
+ 				window.location.href="https://culturalheritage-36e7c.firebaseapp.com";
+ 			},function(error){
+ 				alert(error.message);
+ 			});
+ 		});
+		
+		
 		
 	});
+	//파라미터로 UID구해오기
+	function getUserUid(urlValue){
+		var uId = "";
+		
+		var url = unescape(urlValue);
+		var pm  = url.split('?');
+
+		var params   = pm[1].split('&');
+		for( var i=0; i<params.length; i++ ){
+		     var param = params[i].split('=');
+		     uId=param[1];
+		}
+		
+		return uId;
+	}
 	</script>
+
 </head>
-<body>
-<table border="1" style=" width: 100%;height: 100%" >
-	<tr>
-		<td colspan="3" style="height: 15%">
-			 <div id="includeHeader"></div>
-		</td>
-	 </tr>
-	 <tr style="height: 70%">
-	 	<td>
-	 		<div id="includeLeft"> </div>
-	 	</td>
-	 	<td>
-	 		<div id="includeCenter"> </div>
-	 	</td>
-	 	<td>
-	 		<div id="includeRight"> </div>
-	 	</td>
-	 
-	 </tr>
-	 <tr style="height: 15%">
-	 	<td colspan="3">
-	 		<div id="includeFooter"> </div>
-	 	</td>
-	</tr>
-</table>
+<body id="myBody" style="display: none;">
+	 <div id="wapper">
+	        <!--헤더시작-->
+	        <header>
+	            <p>header</p>
+	        </header>
+	        <!--네비게이션-->
+	        
+	        <nav id="includeLeft">
+	             
+	        </nav>
+	        <!--콘텐츠부분-->
+	        <section>
+	            <p>section</p>
+	            <article>
+	                <p>article</p>
+	            </article>
+	        </section>
+	        <!--사이드바-->
+	        <aside id="includeRight">
+	        <div class="fr topClose"><a id="BTN_GOOGLE_LOGOUT" class="btn_css_close" href="#">인증해제</a></div>
+	        </aside>
+	        <!--풋터-->
+	        <footer id="includeFooter"></footer>
+	    </div> 
 </body>
 </html>
