@@ -1,0 +1,132 @@
+<script type="text/javascript">
+	$(document).ready(function(){
+		
+		firebase.database().ref("/heritage").on('value',function(snapshot){
+			
+			 var html = "";
+			snapshot.forEach(function(child){
+				var data = child.val();
+				html += "<tr id='tr_"+child.key +"'>";
+				html += "<td><input type='checkbox' id='chk_"+child.key +"' name='box' value='"+child.key+"'></td>"; 
+				html += "<td>"+data.ROWNUMBER+"</td>";
+				html += "<td>"+data.SIDAE+"</td>";
+				html += "<td>"+data.NICKNAME+"</td>";
+				html += "<td>"+data.SUBJECT+"</td>";
+				html += "<td>"+data.ADRESS+"</td>";
+				html += "<td>"+data.BUNROU+"</td>";
+				html += "</tr>";
+			});
+			$("#dataList").append(html); 
+		});
+		
+		//검색버튼 클릭시
+		$("#sarchBtn").click(function(){
+		 	
+			searchData();
+		});
+		
+		//데이터 삭제
+		$("#dataDelete").click(function(){
+			if(confirm("선택한 항목을 삭제하시겠습니까?")){
+				$("input[name=box]:checked").each(function() {
+					var key = $(this).val();
+					firebase.database().ref("/heritage/"+key).remove();
+					$("#tr_"+key).remove();
+				});
+			}
+		});
+		
+		
+		$("#chkAll").click(function(){
+			if($("#chkAll").prop("checked")) { //해당화면에 전체 checkbox들을 체크해준다 
+				$("input[type=checkbox]").prop("checked",true); // 전체선택 체크박스가 해제된 경우 
+			} else { //해당화면에 모든 checkbox들의 체크를해제시킨다.
+				$("input[type=checkbox]").prop("checked",false); 
+			}
+		});
+		
+	});
+	
+	function searchData(){
+		
+		var searchType = $("#searchType").val();
+		var searchVal = $("#searchValue").val();
+		if(searchVal == ""){
+			alert("검색어를 입력해주시기 바랍니다.");
+			$("#searchValue").focus();
+			return;
+		}
+		
+		
+		firebase.database().ref("/heritage").orderByChild(searchType).startAt(searchVal).endAt(searchVal+"\uf8ff").on('value',function(snapshot){
+			 var html = "";
+		 snapshot.forEach(function(child){
+					var data = child.val();
+					html += "<tr id='tr_"+child.key +"'>";
+					html += "<td><input type='checkbox' id='chk_"+child.key +"' name='box' value='"+child.key+"'></td>"; 
+					html += "<td>"+data.ROWNUMBER+"</td>";
+					html += "<td>"+data.SIDAE+"</td>";
+					html += "<td>"+data.NICKNAME+"</td>";
+					html += "<td>"+data.SUBJECT+"</td>";
+					html += "<td>"+data.ADRESS+"</td>";
+					html += "<td>"+data.BUNROU+"</td>";
+					html += "</tr>";
+			});
+			$("#dataList").html(html);  
+		});
+		
+	}
+	
+</script>
+
+<h1 align="center" style="font-size: 25px;font: bold;">문화재리스트 뿌리기</h1>
+<br>
+<br>
+<div style="width: 100%">
+	<div style="width: 50%; float: left;" >
+		검색조건 : 
+		
+		<select id="searchType" style="width:20%;height:20px;" >
+			<option value="NICKNAME">이름</option>
+			<option value="SUBJECT">국보  </option>
+			<option value="BUNROU"> 분류  </option>
+			<option value="ADRESS"> 주소  </option>
+		</select> 
+		
+		
+		<input type="text" id="searchValue" style="width:20%;height: 20px;"><input type="button" id="sarchBtn" style="height: 20px;font-size: 12px;" value="검색">
+		
+		
+	</div>
+	<div style="width: 50%; float: left; ">
+		<input type="button" value="삭제" id="dataDelete" style="height: 20px;font-size: 12px; float:right;"/>
+	</div>
+</div>
+<div>
+	
+</div>
+<br>
+<table>
+	<colgroup>
+		<col width="50"/>
+		<col width="50"/>
+		<col width="120"/>
+		<col width="120"/>
+		<col width="120"/>
+		<col width="120"/>
+		<col width="120"/>
+	</colgroup>
+	<thead>
+		<tr>
+			<td><input type="checkbox" id="chkAll"></td>
+			<td>순번</td>
+			<td>시대</td>
+			<td>이름</td>
+			<td>국보</td>
+			<td>주소</td>
+			<td>분류</td>
+		</tr>
+	</thead>
+	<tbody id="dataList">
+	</tbody>
+</table>

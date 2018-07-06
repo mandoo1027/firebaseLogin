@@ -16,7 +16,7 @@ body {
  }
  header {
      height: 50px;
-     width: 97%;
+     width: 96.5%;
    /*   background-color: red; */
  }
  nav, section, aside {
@@ -29,7 +29,7 @@ body {
  }
  section {
      /* background-color: green;    */
-     width: 67%;
+     width: 65%;
  }
  aside {
      /* background-color: goldenrod; */
@@ -37,7 +37,7 @@ body {
  }
  footer {
      height: 50px;
-     width: 97%;
+     width: 96.5%;
      /* background-color: blue; */
      position: relatiev;
      clear: both;

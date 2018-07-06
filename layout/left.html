@@ -1,19 +1,12 @@
 <script type="text/javascript">
 	var firstMenu = "";
 	$(document).ready(function(){
-		
-		
-			
-		
-		
 		initMenu();
-		
-		 
 	});
 	
+	//메뉴설정
 	function initMenu(){
 		//UID구해오기
-		
 		firebase.database().ref("/menuList").once('value',function(menuList){
 			
 			menuList.forEach(function(childSnapshot) {
@@ -21,7 +14,7 @@
 			    var menuList = childSnapshot.val();
 			    
 			    if(menuList.UPPER_MENU_ID == 0){
-			    	firstMenu += "<li class='first' onclick='#'>";
+			    	firstMenu += "<li class='first' >";
 					firstMenu += "	<p >"+menuList.MENU_NM+"</p>";
 					firstMenu += "</li>";
 					firebase.database().ref("/menuList").once('value',function(sonMenuList){
@@ -36,11 +29,11 @@
 					});
 			    }
 			});
-		    
-			 
 		});
-		
-	}
+	} 
+	
+	
+	
 	
 	</script>
 

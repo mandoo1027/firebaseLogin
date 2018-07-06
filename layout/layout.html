@@ -10,14 +10,15 @@
 	<link type="text/css" rel="stylesheet" href="../css/common.css" />
 	<link type="text/css" rel="stylesheet" href="../css/reset.css" />
 	<script type="text/javascript">
+	var homePageUrl = "https://culturalheritage-36e7c.firebaseapp.com";
 	$(document).ready(function(){
 		
 		//UID구해오기
 		var uID = getUserUid(location.href);
-		firebase.database().ref("/onUsers/"+uID+"/siteOn").once('value',function(snapshot){
+		firebase.database().ref("/onUsers/"+uID+"/siteOn").on('value',function(snapshot){
 			if ( snapshot.val() == 0){ //0인경우 로그인불가 인증안된 화면
 				alert("잘못된 접근입니다. 인증 후 다시 접속해주시기 바랍니다.");
-				window.location.href="https://culturalheritage-36e7c.firebaseapp.com";
+				window.location.href=homePageUrl;
 				$("#myBody").hide();
 			}else{
 				$("#myBody").show();		
@@ -37,7 +38,7 @@
  				alert("인증이 해제되었습니다.");
  				$("#BTN_GOOGLE_LOGIN").show();
  				firebase.database().ref("/onUsers/"+uID+"/siteOn").set(0);
- 				window.location.href="https://culturalheritage-36e7c.firebaseapp.com";
+ 				window.location.href=homePageUrl;
  			},function(error){
  				alert(error.message);
  			});
@@ -46,6 +47,8 @@
 		
 		
 	});
+	
+ 
 	//파라미터로 UID구해오기
 	function getUserUid(urlValue){
 		var uId = "";
@@ -61,6 +64,13 @@
 		
 		return uId;
 	}
+	function movePage(url2){ 
+		var url = homePageUrl + url2;
+ 
+		$('#includeCenter').load(url);
+	} 
+	
+	
 	</script>
 
 </head>
@@ -76,7 +86,7 @@
 	             
 	        </nav>
 	        <!--콘텐츠부분-->
-	        <section>
+	        <section id="includeCenter"  style="overflow: auto;">
 	            <p>section</p>
 	            <article>
 	                <p>article</p>
