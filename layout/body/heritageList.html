@@ -1,10 +1,14 @@
 <script type="text/javascript">
+	var maxRownum = 0;
+	var saveType = "N";  //N 없음 , I 추가 , U 업데이트
+	var updateKey = "";
 	$(document).ready(function(){
 		
-		firebase.database().ref("/heritage").on('value',function(snapshot){
+		firebase.database().ref("/heritage").orderByKey().on('value',function(snapshot){
 			
 			 var html = "";
 			snapshot.forEach(function(child){
+				maxRownum ++;
 				var data = child.val();
 				html += "<tr id='tr_"+child.key +"'>";
 				html += "<td><input type='checkbox' id='chk_"+child.key +"' name='box' value='"+child.key+"'></td>"; 
@@ -45,6 +49,128 @@
 			}
 		});
 		
+		var addCnt = 0;
+		//행추가
+		$("#dataAdd").click(function(){
+			
+			if(addCnt >= 1){
+				alert("등록후에 추가버튼을 클릭하시기 바랍니다.");
+				return;
+			}
+			saveType = "I";
+			addCnt ++;
+			maxRownum ++;
+
+			var html  = "<tr id= 'addTr'>";
+				html += "<td></td>";
+				html += "<td  width='30px'> <input type='text' id='rownumber' width='50px' height='12px' value="+maxRownum+" checked></td>";
+				html += "<td  width='30px'><input type='text' id='sidae' width='50px' height='12px'></td>";
+				html += "<td  width='30px'> <input type='text' id='nickname' width='50px' height='12px'></td>";
+				html += "<td  width='30px'><input type='text' id='subject' width='50px' height='12px'></td>";
+				html += "<td  width='30px'><input type='text' id='adress' width='50px' height='12px'></td>";
+				html += "<td  width='30px'><input type='text' id='bunrow' width='50px' height='12px'></td>";
+				html += "</tr>";
+			
+			$("table tbody tr:first").before(html);
+		});
+		
+		$("#dataUpdate").click(function(){
+			var updateCnt = 0;
+			var key = "";
+			$("input[name=box]:checked").each(function() {
+				key = $(this).val();
+				updateCnt++;
+			});
+			
+			if(updateCnt > 1){
+				alert("수정할 데이터를 한건만 선택해주시기 바랍니다.");
+				return;
+			}
+			$("#tr_"+key).html("");
+			
+			saveType = "U";
+			updateKey = key; 
+			firebase.database().ref("/heritage/"+key).once('value',function(snapshot){
+				
+				var html = "<td><input type='checkbox' id='chk_"+snapshot.key +"' name='box' value='"+snapshot.key+"'></td>"; 
+					html += "<td  width='30px'> <input type='text' id='rownumber' width='50px' height='12px' value="+snapshot.val().ROWNUMBER+"></td>";
+					html += "<td  width='30px'><input type='text' id='sidae' width='50px' height='12px'      value="+snapshot.val().SIDAE+"></td>";
+					html += "<td  width='30px'> <input type='text' id='nickname' width='50px' height='12px'  value="+snapshot.val().NICKNAME+"></td>";
+					html += "<td  width='30px'><input type='text' id='subject' width='50px' height='12px'    value="+snapshot.val().SUBJECT+"></td>";
+					html += "<td  width='30px'><input type='text' id='adress' width='50px' height='12px'     value="+snapshot.val().ADRESS+"></td>";
+					html += "<td  width='30px'><input type='text' id='bunrow' width='50px' height='12px'     value="+snapshot.val().BUNROU+"></td>";
+				
+				$("#tr_"+snapshot.key).html(html);
+			});
+		});
+		
+		$("#dataSave").click(function(){
+			
+			if(!confirm("저장하시겠습니까?")) return;
+			
+			var rowNumber = $("#rownumber").val();
+			var sidae = $("#sidae").val();
+			var nickName = $("#nickname").val();
+			var subject = $("#subject").val();
+			var adress = $("#adress").val();
+			var bunrou = $("#bunrow").val();
+			
+			if(saveType == "I"){
+				var newPostRef = firebase.database().ref("/heritage").push();
+				newPostRef.set({
+				   ROWNUMBER: rowNumber
+				  ,SIDAE    : sidae
+				  ,NICKNAME : nickName
+				  ,SUBJECT : subject
+				  ,ADRESS : adress
+				  ,BUNROU : bunrou
+				},function(error){
+					if (error) {
+					      alert("저장에 실패하였습니다.");
+				    } else {
+						addCnt = 0;
+						alert("정상적으로 저장되었습니다.");
+						$("#addTr").remove();
+				    }
+				});
+			}else if(saveType == "U"){
+				
+				var updateData = {
+					   ROWNUMBER: rowNumber
+					  ,SIDAE    : sidae
+					  ,NICKNAME : nickName
+					  ,SUBJECT : subject
+					  ,ADRESS : adress
+					  ,BUNROU : bunrou
+					};
+				
+				
+				firebase.database().ref("/heritage/"+updateKey).update(updateData,function(error){
+					if (error) {
+					      alert("저장에 실패하였습니다.");
+				    } else {
+						addCnt = 0;
+						alert("정상적으로 저장되었습니다.");
+						
+						
+						firebase.database().ref("/heritage/"+updateKey).once('value',function(snapshot){
+							$("#tr_"+snapshot.key).html("");
+							var html = "<td><input type='checkbox' id='chk_"+snapshot.key +"' name='box' value='"+snapshot.key+"'></td>"; 
+								html += "<td  width='30px'>"+snapshot.val().ROWNUMBER+"</td>";
+								html += "<td  width='30px'>"+snapshot.val().SIDAE+"</td>";
+								html += "<td  width='30px'>"+snapshot.val().NICKNAME+"</td>";
+								html += "<td  width='30px'>"+snapshot.val().SUBJECT+"</td>";
+								html += "<td  width='30px'>"+snapshot.val().ADRESS+"</td>";
+								html += "<td  width='30px'>"+snapshot.val().BUNROU+"</td>";
+							
+							$("#tr_"+snapshot.key).html(html);
+						});
+
+				    }
+				});
+				
+			}
+		});
 	});
 	
 	function searchData(){
@@ -59,20 +185,20 @@
 		
 		
 		firebase.database().ref("/heritage").orderByChild(searchType).startAt(searchVal).endAt(searchVal+"\uf8ff").on('value',function(snapshot){
-			 var html = "";
-		 snapshot.forEach(function(child){
-					var data = child.val();
-					html += "<tr id='tr_"+child.key +"'>";
-					html += "<td><input type='checkbox' id='chk_"+child.key +"' name='box' value='"+child.key+"'></td>"; 
-					html += "<td>"+data.ROWNUMBER+"</td>";
-					html += "<td>"+data.SIDAE+"</td>";
-					html += "<td>"+data.NICKNAME+"</td>";
-					html += "<td>"+data.SUBJECT+"</td>";
-					html += "<td>"+data.ADRESS+"</td>";
-					html += "<td>"+data.BUNROU+"</td>";
-					html += "</tr>";
-			});
-			$("#dataList").html(html);  
+		var html = "";
+			  snapshot.forEach(function(child){
+			 	var data = child.val();
+				html += "<tr id='tr_"+child.key +"'>";
+				html += "<td><input type='checkbox' id='chk_"+child.key +"' name='box' value='"+child.key+"'></td>"; 
+				html += "<td>"+data.ROWNUMBER+"</td>";
+				html += "<td>"+data.SIDAE+"</td>";
+				html += "<td>"+data.NICKNAME+"</td>";
+				html += "<td>"+data.SUBJECT+"</td>";
+				html += "<td>"+data.ADRESS+"</td>";
+				html += "<td>"+data.BUNROU+"</td>";
+				html += "</tr>";
+			  });
+			  $("#dataList").html(html);  
 		});
 		
 	}
@@ -99,34 +225,40 @@
 		
 	</div>
 	<div style="width: 50%; float: left; ">
+		<input type="button" value="수정" id="dataUpdate" style="height: 20px;font-size: 12px; float:right;"/>
 		<input type="button" value="삭제" id="dataDelete" style="height: 20px;font-size: 12px; float:right;"/>
+		<input type="button" value="추가" id="dataAdd" style="height: 20px;font-size: 12px; float:right;"/>
+		<input type="button" value="저장" id="dataSave" style="height: 20px;font-size: 12px; float:right;"/>
 	</div>
 </div>
 <div>
-	
+
 </div>
 <br>
-<table>
-	<colgroup>
-		<col width="50"/>
-		<col width="50"/>
-		<col width="120"/>
-		<col width="120"/>
-		<col width="120"/>
-		<col width="120"/>
-		<col width="120"/>
-	</colgroup>
-	<thead>
-		<tr>
-			<td><input type="checkbox" id="chkAll"></td>
-			<td>순번</td>
-			<td>시대</td>
-			<td>이름</td>
-			<td>국보</td>
-			<td>주소</td>
-			<td>분류</td>
-		</tr>
-	</thead>
-	<tbody id="dataList">
-	</tbody>
-</table>
+<br>
+<div style="width: 100%; position:absolute; overflow:scroll;">
+	<table>
+		<colgroup>
+			<col width="50"/>
+			<col width="50"/>
+			<col width="120"/>
+			<col width="120"/>
+			<col width="120"/>
+			<col width="120"/>
+			<col width="120"/>
+		</colgroup>
+		<thead>
+			<tr>
+				<td><input type="checkbox" id="chkAll" ></td>
+				<td>순번</td>
+				<td >시대</td>
+				<td>이름</td>
+				<td>국보</td>
+				<td>주소</td>
+				<td>분류</td>
+			</tr>
+		</thead>
+		<tbody id="dataList">
+		</tbody>
+	</table>
+</div>
